@@ -167,14 +167,21 @@ fn read_pin(path: &Path, key: &str) -> io::Result<String> {
     Err(invalid(&message))
 }
 
-/// Reads lines like `first-run = "fail"`. Returns whether each scenario is
-/// expected to pass.
 fn read_expectations(path: &Path) -> io::Result<BTreeMap<String, bool>> {
-    let text = fs::read_to_string(path)?;
+    parse_expectations(&fs::read_to_string(path)?)
+}
+
+/// Parses lines like `first-run = "fail"  # comment`. Returns whether each
+/// scenario is expected to pass.
+fn parse_expectations(text: &str) -> io::Result<BTreeMap<String, bool>> {
     let mut expected = BTreeMap::new();
     for line in text.lines() {
-        let line = line.trim();
-        if line.is_empty() || line.starts_with('#') {
+        // Values never contain `#`, so everything after it is a comment.
+        let line = match line.split_once('#') {
+            Some((before, _)) => before.trim(),
+            None => line.trim(),
+        };
+        if line.is_empty() {
             continue;
         }
         let Some((name, value)) = line.split_once('=') else {
@@ -296,4 +303,23 @@ fn report(vanilla: &[Observation], cerium: &[Observation]) -> bool {
         }
     }
     all_match
+}
+
+#[cfg(test)]
+mod tests {
+    use super::parse_expectations;
+
+    #[test]
+    fn expectations_allow_comments() {
+        let text = "# x\nfirst-run = \"fail\"  # until step 7\n\nstatus-ping = \"pass\"\n";
+        let expected = parse_expectations(text).unwrap();
+        assert_eq!(expected.get("first-run"), Some(&false));
+        assert_eq!(expected.get("status-ping"), Some(&true));
+    }
+
+    #[test]
+    fn expectations_reject_unknown_values() {
+        assert!(parse_expectations("first-run = \"maybe\"").is_err());
+        assert!(parse_expectations("first-run").is_err());
+    }
 }
