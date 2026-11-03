@@ -1,0 +1,13 @@
+[package]
+name = "cerium-registry"
+description = "Static and data-driven registries for CeriumMC."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true

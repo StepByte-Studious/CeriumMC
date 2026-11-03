@@ -1,0 +1,20 @@
+# Build output
+/target/
+
+# Upstream vanilla jar and extracted contents.
+# Mojang's code and data must never be committed (see CONTRIBUTING.md).
+/.cached/
+*.jar
+
+# Local server runs
+/run/
+/world*/
+/logs/
+/crash-reports/
+
+# Editors and OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
