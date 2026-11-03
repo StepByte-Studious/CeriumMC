@@ -29,7 +29,7 @@ jobs:
     outputs:
       reports-key: ${{ steps.key.outputs.key }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Lint scripts
         run: shellcheck -x scripts/*.sh
       - name: Compute the reports cache key
@@ -72,7 +72,7 @@ jobs:
     name: Cargo.lock up to date
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - name: Resolve the lockfile
         run: cargo metadata --format-version 1 > /dev/null
@@ -89,7 +89,7 @@ jobs:
     name: Format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
@@ -100,7 +100,7 @@ jobs:
     needs: vanilla
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/vanilla-reports
         with:
           key: ${{ needs.vanilla.outputs.reports-key }}
@@ -117,7 +117,7 @@ jobs:
     env:
       RUSTDOCFLAGS: -D warnings
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/vanilla-reports
         with:
           key: ${{ needs.vanilla.outputs.reports-key }}
@@ -130,7 +130,7 @@ jobs:
     needs: vanilla
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/vanilla-reports
         with:
           key: ${{ needs.vanilla.outputs.reports-key }}
@@ -170,7 +170,7 @@ jobs:
             target: x86_64-apple-darwin
             run-tests: false
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/vanilla-reports
         with:
           key: ${{ needs.vanilla.outputs.reports-key }}
@@ -199,7 +199,7 @@ jobs:
           - name: Android aarch64 (QEMU)
             target: aarch64-linux-android
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/vanilla-reports
         with:
           key: ${{ needs.vanilla.outputs.reports-key }}
@@ -220,7 +220,7 @@ jobs:
     needs: vanilla
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/vanilla-reports
         with:
           key: ${{ needs.vanilla.outputs.reports-key }}
@@ -249,7 +249,7 @@ jobs:
     name: Dependency policy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: EmbarkStudios/cargo-deny-action@v2
 
   ci-success:
