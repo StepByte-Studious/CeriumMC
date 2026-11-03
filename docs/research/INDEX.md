@@ -7,7 +7,7 @@ Research notes for each roadmap step. See [README.md](README.md) for the process
 | 1 | Workspace bootstrap | n/a (infrastructure) | Done |
 | 2 | Research process | n/a (infrastructure) | Done |
 | 3 | Vanilla data-generator pipeline | n/a (infrastructure) | Done |
-| 4 | Differential parity harness | — | Not started |
+| 4 | Differential parity harness | n/a (infrastructure) | In progress |
 | 5 | Benchmark and budget harness | — | Not started |
 | 6 | Logging, errors and crash reports | — | Not started |
 | 7 | Configuration and CLI | — | Not started |

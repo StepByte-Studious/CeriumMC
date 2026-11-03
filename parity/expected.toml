@@ -1,0 +1,8 @@
+# Expected result of each parity scenario (crates/cerium-harness).
+#
+# "pass": CeriumMC must match vanilla. If it stops matching, CI fails.
+# "fail": a known difference. If it starts matching, CI also fails, so this
+#         file always says exactly which scenarios have reached parity.
+
+first-run = "fail"    # until roadmap step 7 (server.properties, eula.txt)
+status-ping = "fail"  # until roadmap step 19 (status and server-list ping)

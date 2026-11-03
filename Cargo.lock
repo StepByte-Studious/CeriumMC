@@ -15,6 +15,10 @@ name = "cerium-entity"
 version = "0.1.0"
 
 [[package]]
+name = "cerium-harness"
+version = "0.1.0"
+
+[[package]]
 name = "cerium-nbt"
 version = "0.1.0"
 

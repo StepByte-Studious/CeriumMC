@@ -100,13 +100,16 @@ Our own goals (efficiency, speed, storage, plugins) come *after* parity. They st
 
 ### 4. Differential parity harness
 - **Goal:** Infrastructure that compares CeriumMC with vanilla automatically.
-- **Upstream reference:** The vanilla server jar run headless
+- **Upstream reference:** The vanilla server jar, run live
 - **Deliverables:**
-  - A launcher that runs the vanilla reference server.
-  - A transparent packet-capture proxy that records sessions.
-  - A golden-file store for packets, chunks, NBT and command output, plus a diff tool that understands the protocol.
-  - A scripted bot client used to drive scenarios.
-- **Done when:** The same scripted scenario can run against both servers and produce a readable diff.
+  - The `cerium-harness` crate, with the `cerium-parity` binary.
+  - **Server launcher:** runs vanilla or CeriumMC in a fresh directory, waits until it is reachable, sends console commands, and stops it cleanly.
+  - **Recording proxy:** a transparent TCP proxy that records both directions of a connection. A frame decoder turns the recording into a readable packet list.
+  - **Test client:** a minimal Minecraft client (status ping). It is deliberately independent of `cerium-protocol`, so the tests never share code with the server they check.
+  - **Scenarios and diff:** scenarios record named observations, and a line diff shows exactly where CeriumMC differs from vanilla. The first scenarios are `first-run` and `status-ping`.
+  - **`parity/expected.toml`:** the pass/fail state of each scenario. CI fails on a regression, and also when a scenario starts passing without this file being updated.
+  - Vanilla output is never committed (clean-room rule 4). The harness runs vanilla live on every CI run instead of storing golden files.
+- **Done when:** CI runs every scenario against both servers, produces a readable diff, and matches `parity/expected.toml`.
 
 ### 5. Benchmark and budget harness
 - **Goal:** Measure the four core goals continuously.

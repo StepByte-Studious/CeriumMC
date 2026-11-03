@@ -9,6 +9,7 @@ members = [
     "crates/cerium-world",
     "crates/cerium-worldgen",
     "crates/cerium-entity",
+    "crates/cerium-harness",
     "crates/cerium-server",
     "crates/cerium-bin",
 ]
