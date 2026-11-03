@@ -1,0 +1,29 @@
+# The exact vanilla server CeriumMC targets.
+#
+# Every value here was verified against Mojang's official launcher metadata
+# (https://piston-meta.mojang.com/mc/game/version_manifest_v2.json).
+# `scripts/fetch-vanilla.sh` checks the download against all of these values
+# and against the live metadata. Keep one `key = value` pair per line: the
+# script reads this file with a simple line parser.
+
+[server]
+version = "26.3"
+protocol = 777
+world_version = 5023
+data_pack = "121.0"
+resource_pack = "97.1"
+java = 25
+
+# Version metadata JSON (its SHA-1 is listed in Mojang's version manifest).
+metadata_url = "https://piston-meta.mojang.com/v1/packages/5df1795e16eea19d75b923d66ecca9ce183353c5/26.3.json"
+metadata_sha1 = "5df1795e16eea19d75b923d66ecca9ce183353c5"
+
+# The bundler `server.jar`, as published by Mojang.
+url = "https://piston-data.mojang.com/v1/objects/33680f5f2ac32864d6d7cf5e56a705fdb3e05f4c/server.jar"
+size = 62294556
+sha1 = "33680f5f2ac32864d6d7cf5e56a705fdb3e05f4c"
+sha256 = "d052f14d7a173734fba553711e5b570162e2f2a313267ee31a21b975a679be64"
+
+# The actual server jar inside the bundler (`META-INF/versions/26.3/server-26.3.jar`).
+# This is also the jar extracted into the local `.cached/` research copy.
+inner_jar_sha256 = "a362163eec5d1612d520772bc16e5b39c09e3b234fdc045f56bf544284ee8ae6"

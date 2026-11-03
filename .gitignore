@@ -4,6 +4,7 @@
 # Upstream vanilla jar and extracted contents.
 # Mojang's code and data must never be committed (see CONTRIBUTING.md).
 /.cached/
+/.vanilla/
 *.jar
 
 # Local server runs

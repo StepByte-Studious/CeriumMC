@@ -127,6 +127,20 @@ jobs:
       - name: Test
         run: cross test --workspace --target ${{ matrix.target }}
 
+  vanilla:
+    name: Vanilla jar (fetch + verify)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Lint scripts
+        run: shellcheck scripts/*.sh
+      - uses: actions/cache@v4
+        with:
+          path: .vanilla
+          key: vanilla-${{ hashFiles('vanilla.toml') }}
+      - name: Fetch and verify the pinned server jar
+        run: bash scripts/fetch-vanilla.sh
+
   deny:
     name: Dependency policy
     runs-on: ubuntu-latest
@@ -137,7 +151,7 @@ jobs:
   ci-success:
     name: CI success
     if: always()
-    needs: [fmt, clippy, docs, msrv, native, cross, deny]
+    needs: [fmt, clippy, docs, msrv, native, cross, vanilla, deny]
     runs-on: ubuntu-latest
     steps:
       - name: Check that every job passed

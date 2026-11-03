@@ -11,7 +11,7 @@
 | World (data) version | **5023** |
 | Data pack format | 121.0 |
 | Resource pack format | 97.1 |
-| Upstream reference | `.cached/` (bundler jar, SHA-256 `a362163e…ee8ae6`) |
+| Upstream reference | Official `server.jar` (SHA-1 `33680f5f…e05f4c`), pinned in [`vanilla.toml`](vanilla.toml). Local research copy extracted in `.cached/` |
 
 Path shorthand used throughout this document:
 
@@ -62,6 +62,7 @@ Our own goals (efficiency, speed, storage, plugins) come *after* parity. They st
 ## Phase 0: Foundation & research infrastructure
 
 ### 1. Workspace bootstrap
+- **Status:** ✅ Done (2026-11-03)
 - **Goal:** Set up the repository skeleton and engineering standards.
 - **Upstream reference:** n/a
 - **Deliverables:**
@@ -75,10 +76,15 @@ Our own goals (efficiency, speed, storage, plugins) come *after* parity. They st
 - **Goal:** Make studying upstream repeatable and auditable.
 - **Upstream reference:** `JAR/`, `.cached/version.json`
 - **Deliverables:**
-  - A `docs/research/` template with these sections: system, observed behaviour, edge cases, measurement method, open questions.
-  - A research index that maps each roadmap step to its notes.
-  - A CI step that downloads the pinned vanilla jar from Mojang's official metadata, checks its SHA-256 and caches it.
-- **Done when:** The template exists, and the CI fetch and hash check are green.
+  - `docs/research/README.md` (the process and allowed sources), `docs/research/_TEMPLATE.md` (sections: system, observed behaviour, edge cases, measurement method, open questions, sources), and `docs/research/INDEX.md` (maps every roadmap step to its notes).
+  - `vanilla.toml`: the pinned version, URLs, sizes, SHA-1 and SHA-256 hashes, all verified against Mojang's official metadata.
+  - `scripts/fetch-vanilla.sh`, which:
+    - cross-checks the pins against Mojang's live metadata;
+    - downloads the jar and verifies its size, SHA-1 and SHA-256, and the version facts embedded in it;
+    - verifies the hash of the inner jar.
+    - Its `--check-cached` mode verifies the local `.cached/` copy offline.
+  - A CI job that lints the script with shellcheck, caches the jar and runs the full verification.
+- **Done when:** The research docs exist, and the CI fetch-and-verify job is green.
 
 ### 3. Vanilla data-generator pipeline
 - **Goal:** Produce machine-readable vanilla facts without reading code.
