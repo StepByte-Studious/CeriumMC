@@ -89,11 +89,13 @@ Our own goals (efficiency, speed, storage, plugins) come *after* parity. They st
 
 ### 3. Vanilla data-generator pipeline
 - **Goal:** Produce machine-readable vanilla facts without reading code.
-- **Upstream reference:** The vanilla jar's built-in data generator (`--reports`, `--server`), and `data/`
+- **Upstream reference:** The vanilla jar's built-in data generator (`--reports`), and `data/`
 - **Deliverables:**
-  - A CI job (with Java 25 set up through `actions/setup-java`) that runs the vanilla jar's data generator and publishes the reports as a cached artifact: `blocks.json`, `registries.json`, `packets.json`, `commands.json`, datapack and registry dumps.
-  - `build.rs` codegen that consumes those reports.
-- **Done when:** A clean CI run produces all reports, and the codegen compiles on every matrix target.
+  - `scripts/gen-reports.sh` runs the pinned jar's data generator (Java 25) into `.vanilla/reports/`. Reports produced: `blocks.json`, `registries.json`, `packets.json`, `commands.json`, `datapack.json`, `json-rpc-api-schema.json`, biome parameters and default item components.
+  - A pinned fingerprint of the reports (`reports_sha256` in `vanilla.toml`), proving that every machine produces identical output.
+  - A CI job that generates the reports and shares them with every build job through the private Actions cache. They are never committed or uploaded as public artifacts.
+  - `build.rs` code generation in `cerium-registry`. It reads the reports, validates them (contiguous IDs, one default state per block, the block report matches the block registry), and generates the registry and block-state tables.
+- **Done when:** A clean CI run produces the reports with the pinned fingerprint, and the code generation compiles and passes its tests on every matrix target.
 
 ### 4. Differential parity harness
 - **Goal:** Infrastructure that compares CeriumMC with vanilla automatically.

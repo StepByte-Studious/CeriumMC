@@ -1,0 +1,18 @@
+name: Restore vanilla reports
+description: >
+  Restore the vanilla data generator reports produced by the `vanilla` job.
+  They travel through the Actions cache, which only this repository's
+  workflows can read, never as public artifacts.
+inputs:
+  key:
+    description: Cache key from the `vanilla` job's `reports-key` output.
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: actions/cache/restore@v4
+      with:
+        path: .vanilla/reports
+        key: ${{ inputs.key }}
+        enableCrossOsArchive: true
+        fail-on-cache-miss: true

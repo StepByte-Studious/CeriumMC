@@ -15,30 +15,8 @@
 
 set -euo pipefail
 
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-pins="$root/vanilla.toml"
-
-fail() {
-    echo "error: $*" >&2
-    exit 1
-}
-
-# Read `key = value` or `key = "value"` from vanilla.toml.
-pin() {
-    local value
-    value="$(sed -n "s/^$1 = \"\{0,1\}\([^\"]*\)\"\{0,1\}\$/\1/p" "$pins" | head -n 1)"
-    [ -n "$value" ] || fail "missing key '$1' in vanilla.toml"
-    printf '%s' "$value"
-}
-
-# expect NAME ACTUAL EXPECTED
-expect() {
-    [ "$2" = "$3" ] || fail "$1 mismatch: expected '$3', got '$2'"
-    echo "ok: $1 = $2"
-}
-
-sha1_of() { sha1sum "$1" | cut -d ' ' -f 1; }
-sha256_of() { sha256sum "$1" | cut -d ' ' -f 1; }
+# shellcheck source=scripts/lib/common.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 
 version="$(pin version)"
 inner_jar_sha256="$(pin inner_jar_sha256)"

@@ -27,3 +27,8 @@ sha256 = "d052f14d7a173734fba553711e5b570162e2f2a313267ee31a21b975a679be64"
 # The actual server jar inside the bundler (`META-INF/versions/26.3/server-26.3.jar`).
 # This is also the jar extracted into the local `.cached/` research copy.
 inner_jar_sha256 = "a362163eec5d1612d520772bc16e5b39c09e3b234fdc045f56bf544284ee8ae6"
+
+# Fingerprint of the reports from vanilla's data generator (`--reports`), as
+# computed by `scripts/gen-reports.sh`. It proves the generator gives identical
+# output on every machine.
+reports_sha256 = "a6e12ba626ea9dcb25f2a3336522f787e82d9691bdb5817d90db070f0895a79f"

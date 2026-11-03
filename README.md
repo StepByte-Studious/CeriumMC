@@ -25,9 +25,13 @@ CeriumMC is written from the ground up. We study how vanilla *behaves* and never
 
 ## Building
 
-CI builds and tests every commit on Linux, Windows, macOS, ARM64, Raspberry Pi (armv7) and Android. To build locally you need Rust 1.85 or newer:
+CI builds and tests every commit on Linux, Windows, macOS, ARM64, Raspberry Pi (armv7) and Android.
+
+To build locally you need Rust 1.85 or newer, Java 25, Bash, `curl`, `jq` and `unzip`. Some tables are generated at build time from vanilla's own data generator, and those files are never committed. So download and verify the vanilla jar and generate the reports first:
 
 ```sh
+bash scripts/fetch-vanilla.sh
+bash scripts/gen-reports.sh
 cargo build --release
 ```
 

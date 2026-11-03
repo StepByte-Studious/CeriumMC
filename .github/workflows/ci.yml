@@ -19,6 +19,52 @@ env:
   RUSTFLAGS: -D warnings
 
 jobs:
+  # Downloads and verifies the pinned vanilla jar, then produces the data
+  # generator reports that the build scripts read. The reports are derived
+  # from Mojang's game: they are shared with other jobs only through the
+  # Actions cache and are never uploaded as artifacts.
+  vanilla:
+    name: Vanilla jar and reports
+    runs-on: ubuntu-latest
+    outputs:
+      reports-key: ${{ steps.key.outputs.key }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Lint scripts
+        run: shellcheck -x scripts/*.sh
+      - name: Compute the reports cache key
+        id: key
+        run: echo "key=vanilla-reports-${{ hashFiles('vanilla.toml', 'scripts/**') }}" >> "$GITHUB_OUTPUT"
+      - name: Restore the vanilla jar
+        uses: actions/cache@v4
+        with:
+          path: .vanilla/*.jar
+          key: vanilla-jar-${{ hashFiles('vanilla.toml') }}
+      - name: Fetch and verify the pinned server jar
+        run: bash scripts/fetch-vanilla.sh
+      - name: Restore the reports
+        id: reports
+        uses: actions/cache/restore@v4
+        with:
+          path: .vanilla/reports
+          key: ${{ steps.key.outputs.key }}
+          enableCrossOsArchive: true
+      - uses: actions/setup-java@v5
+        if: steps.reports.outputs.cache-hit != 'true'
+        with:
+          distribution: temurin
+          java-version: "25"
+      - name: Generate and verify the reports
+        if: steps.reports.outputs.cache-hit != 'true'
+        run: bash scripts/gen-reports.sh
+      - name: Save the reports
+        if: steps.reports.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .vanilla/reports
+          key: ${{ steps.key.outputs.key }}
+          enableCrossOsArchive: true
+
   fmt:
     name: Format
     runs-on: ubuntu-latest
@@ -31,31 +77,50 @@ jobs:
 
   clippy:
     name: Clippy
+    needs: vanilla
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - uses: ./.github/actions/vanilla-reports
+        with:
+          key: ${{ needs.vanilla.outputs.reports-key }}
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
       - uses: Swatinem/rust-cache@v2
       - run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+      # Cargo.lock is not Mojang data, so it is safe to publish. It lets the
+      # lockfile be committed without a local Rust toolchain.
+      - name: Upload Cargo.lock
+        uses: actions/upload-artifact@v4
+        with:
+          name: Cargo.lock
+          path: Cargo.lock
 
   docs:
     name: Docs
+    needs: vanilla
     runs-on: ubuntu-latest
     env:
       RUSTDOCFLAGS: -D warnings
     steps:
       - uses: actions/checkout@v5
+      - uses: ./.github/actions/vanilla-reports
+        with:
+          key: ${{ needs.vanilla.outputs.reports-key }}
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo doc --workspace --no-deps
 
   msrv:
     name: MSRV (1.85)
+    needs: vanilla
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - uses: ./.github/actions/vanilla-reports
+        with:
+          key: ${{ needs.vanilla.outputs.reports-key }}
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: "1.85.0"
@@ -64,6 +129,7 @@ jobs:
 
   native:
     name: ${{ matrix.name }}
+    needs: vanilla
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -92,6 +158,9 @@ jobs:
             run-tests: false
     steps:
       - uses: actions/checkout@v5
+      - uses: ./.github/actions/vanilla-reports
+        with:
+          key: ${{ needs.vanilla.outputs.reports-key }}
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
@@ -106,6 +175,7 @@ jobs:
 
   cross:
     name: ${{ matrix.name }}
+    needs: vanilla
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -117,6 +187,9 @@ jobs:
             target: aarch64-linux-android
     steps:
       - uses: actions/checkout@v5
+      - uses: ./.github/actions/vanilla-reports
+        with:
+          key: ${{ needs.vanilla.outputs.reports-key }}
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
@@ -126,20 +199,6 @@ jobs:
           tool: cross
       - name: Test
         run: cross test --workspace --target ${{ matrix.target }}
-
-  vanilla:
-    name: Vanilla jar (fetch + verify)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - name: Lint scripts
-        run: shellcheck scripts/*.sh
-      - uses: actions/cache@v4
-        with:
-          path: .vanilla
-          key: vanilla-${{ hashFiles('vanilla.toml') }}
-      - name: Fetch and verify the pinned server jar
-        run: bash scripts/fetch-vanilla.sh
 
   deny:
     name: Dependency policy
@@ -151,7 +210,7 @@ jobs:
   ci-success:
     name: CI success
     if: always()
-    needs: [fmt, clippy, docs, msrv, native, cross, vanilla, deny]
+    needs: [vanilla, fmt, clippy, docs, msrv, native, cross, deny]
     runs-on: ubuntu-latest
     steps:
       - name: Check that every job passed
