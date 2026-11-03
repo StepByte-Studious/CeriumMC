@@ -36,7 +36,7 @@ jobs:
         id: key
         run: echo "key=vanilla-reports-${{ hashFiles('vanilla.toml', 'scripts/**') }}" >> "$GITHUB_OUTPUT"
       - name: Restore the vanilla jar
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .vanilla/*.jar
           key: vanilla-jar-${{ hashFiles('vanilla.toml') }}
@@ -44,7 +44,7 @@ jobs:
         run: bash scripts/fetch-vanilla.sh
       - name: Restore the reports
         id: reports
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: .vanilla/reports
           key: ${{ steps.key.outputs.key }}
@@ -59,7 +59,7 @@ jobs:
         run: bash scripts/gen-reports.sh
       - name: Save the reports
         if: steps.reports.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: .vanilla/reports
           key: ${{ steps.key.outputs.key }}
@@ -225,7 +225,7 @@ jobs:
         with:
           key: ${{ needs.vanilla.outputs.reports-key }}
       - name: Restore the vanilla jar
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: .vanilla/*.jar
           key: vanilla-jar-${{ hashFiles('vanilla.toml') }}
