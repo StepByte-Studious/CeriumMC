@@ -1,0 +1,4 @@
+# The Android image in the cross 0.2.5 release ships NDK r21, which has no
+# libunwind; Rust needs NDK r25+. The maintained `main` image uses NDK r25b.
+[target.aarch64-linux-android]
+image = "ghcr.io/cross-rs/aarch64-linux-android:main"
