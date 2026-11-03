@@ -88,6 +88,7 @@ Our own goals (efficiency, speed, storage, plugins) come *after* parity. They st
 - **Done when:** The research docs exist, and the CI fetch-and-verify job is green.
 
 ### 3. Vanilla data-generator pipeline
+- **Status:** ✅ Done (2026-11-03)
 - **Goal:** Produce machine-readable vanilla facts without reading code.
 - **Upstream reference:** The vanilla jar's built-in data generator (`--reports`), and `data/`
 - **Deliverables:**
