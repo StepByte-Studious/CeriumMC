@@ -7,7 +7,8 @@ use std::io;
 use std::net::{SocketAddr, TcpListener};
 use std::path::Path;
 use std::process::ExitStatus;
-use std::time::Duration;
+use std::thread;
+use std::time::{Duration, Instant};
 
 use crate::proxy::Proxy;
 use crate::server::{ServerProcess, Target};
@@ -16,6 +17,7 @@ use crate::wire;
 const EXIT_TIMEOUT: Duration = Duration::from_secs(120);
 const BOOT_TIMEOUT: Duration = Duration::from_secs(180);
 const STOP_TIMEOUT: Duration = Duration::from_secs(60);
+const RETRY_DELAY: Duration = Duration::from_secs(1);
 
 /// Directories the vanilla bundler unpacks next to the server. They are a
 /// detail of how the Java server is packaged, not server behaviour.
@@ -97,10 +99,25 @@ fn status_ping(cx: &Context<'_>) -> io::Result<Vec<Observation>> {
         return Ok(vec![observe("status", text)]);
     }
 
-    let proxy = Proxy::start(address)?;
-    let reply = wire::status_ping(proxy.address(), cx.protocol);
-    let capture = proxy.finish()?;
+    // Vanilla opens its port before it finishes loading, and closes status
+    // connections until it is ready. So retry until the server answers.
+    let deadline = Instant::now() + BOOT_TIMEOUT;
+    let (reply, capture) = loop {
+        let proxy = Proxy::start(address)?;
+        let reply = wire::status_ping(proxy.address(), cx.protocol);
+        let capture = proxy.finish()?;
+        if reply.is_ok() || Instant::now() >= deadline {
+            break (reply, capture);
+        }
+        thread::sleep(RETRY_DELAY);
+    };
     server.stop(STOP_TIMEOUT)?;
+    if let Err(err) = &reply {
+        if cx.target.is_vanilla() {
+            let message = format!("vanilla did not answer the status ping: {err}");
+            return Err(io::Error::other(message));
+        }
+    }
 
     let mut observations = match reply {
         Ok(reply) => {
