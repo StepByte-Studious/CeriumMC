@@ -22,11 +22,14 @@ pub mod vanilla {
     }
 
     include!(concat!(env!("OUT_DIR"), "/vanilla_reports.rs"));
+
+    // Every block has at least one state. Checked at compile time.
+    const _: () = assert!(BLOCK_STATE_COUNT >= BLOCK_COUNT);
 }
 
 #[cfg(test)]
 mod tests {
-    use super::vanilla::{BLOCK_COUNT, BLOCK_STATE_COUNT, REGISTRIES, RegistryInfo};
+    use super::vanilla::{BLOCK_COUNT, REGISTRIES, RegistryInfo};
 
     fn registry(name: &str) -> &'static RegistryInfo {
         REGISTRIES
@@ -54,10 +57,5 @@ mod tests {
         let mut ids: Vec<u32> = REGISTRIES.iter().map(|info| info.protocol_id).collect();
         ids.sort_unstable();
         assert!(ids.iter().copied().eq(0..REGISTRIES.len() as u32));
-    }
-
-    #[test]
-    fn every_block_has_at_least_one_state() {
-        assert!(BLOCK_STATE_COUNT >= BLOCK_COUNT);
     }
 }
