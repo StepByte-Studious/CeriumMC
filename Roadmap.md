@@ -73,6 +73,7 @@ Our own goals (efficiency, speed, storage, plugins) come *after* parity. They st
 - **Done when:** GitHub CI is green on every matrix target for an empty workspace, and the policy doc is merged.
 
 ### 2. Research process
+- **Status:** ✅ Done (2026-11-03)
 - **Goal:** Make studying upstream repeatable and auditable.
 - **Upstream reference:** `JAR/`, `.cached/version.json`
 - **Deliverables:**
