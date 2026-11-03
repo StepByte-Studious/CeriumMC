@@ -65,6 +65,26 @@ jobs:
           key: ${{ steps.key.outputs.key }}
           enableCrossOsArchive: true
 
+  # Checks that the committed Cargo.lock is current. When a dependency
+  # changes, the updated lockfile is uploaded (it is not Mojang data) so it
+  # can be committed without a local Rust toolchain.
+  lockfile:
+    name: Cargo.lock up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Resolve the lockfile
+        run: cargo metadata --format-version 1 > /dev/null
+      - name: Upload Cargo.lock
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Cargo.lock
+          path: Cargo.lock
+      - name: Check that Cargo.lock is unchanged
+        run: git diff --exit-code Cargo.lock
+
   fmt:
     name: Format
     runs-on: ubuntu-latest
@@ -88,14 +108,7 @@ jobs:
         with:
           components: clippy
       - uses: Swatinem/rust-cache@v2
-      - run: cargo clippy --workspace --all-targets --all-features -- -D warnings
-      # Cargo.lock is not Mojang data, so it is safe to publish. It lets the
-      # lockfile be committed without a local Rust toolchain.
-      - name: Upload Cargo.lock
-        uses: actions/upload-artifact@v4
-        with:
-          name: Cargo.lock
-          path: Cargo.lock
+      - run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 
   docs:
     name: Docs
@@ -110,7 +123,7 @@ jobs:
           key: ${{ needs.vanilla.outputs.reports-key }}
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo doc --workspace --no-deps
+      - run: cargo doc --workspace --no-deps --locked
 
   msrv:
     name: MSRV (1.85)
@@ -125,7 +138,7 @@ jobs:
         with:
           toolchain: "1.85.0"
       - uses: Swatinem/rust-cache@v2
-      - run: cargo check --workspace --all-targets
+      - run: cargo check --workspace --all-targets --locked
 
   native:
     name: ${{ matrix.name }}
@@ -168,10 +181,10 @@ jobs:
         with:
           key: ${{ matrix.target }}
       - name: Build
-        run: cargo build --workspace --all-targets --target ${{ matrix.target }}
+        run: cargo build --workspace --all-targets --locked --target ${{ matrix.target }}
       - name: Test
         if: matrix.run-tests
-        run: cargo test --workspace --target ${{ matrix.target }}
+        run: cargo test --workspace --locked --target ${{ matrix.target }}
 
   cross:
     name: ${{ matrix.name }}
@@ -198,7 +211,7 @@ jobs:
         with:
           tool: cross
       - name: Test
-        run: cross test --workspace --target ${{ matrix.target }}
+        run: cross test --workspace --locked --target ${{ matrix.target }}
 
   deny:
     name: Dependency policy
@@ -210,7 +223,7 @@ jobs:
   ci-success:
     name: CI success
     if: always()
-    needs: [vanilla, fmt, clippy, docs, msrv, native, cross, deny]
+    needs: [vanilla, lockfile, fmt, clippy, docs, msrv, native, cross, deny]
     runs-on: ubuntu-latest
     steps:
       - name: Check that every job passed
